@@ -7,55 +7,84 @@ class Jogador:
         self.mao = []
         self.pontos = 0
 
-# O estado do jogo (a lista de jogadores)
+class Baralho:
+    def __init__(self):
+        self.valores = ["4", "5", "6", "7", "Q", "J", "K", "A", "2", "3"]
+        self.naipes = ["Ouros", "Espadas", "Copas", "Paus"]
+        self.baralho = []
+
+    def criarBaralho(self):
+        for naipe in self.naipes:
+            for valor in self.valores:
+                self.baralho.append(f"{valor} de {naipe}")
+
+    def embaralharBaralho(self):
+        random.shuffle(self.baralho)
+
 jogadores = []
 
-# --- Funções que o servidor vai expor ---
+baralho = Baralho()
+
+baralho.criarBaralho()
+baralho.embaralharBaralho()
+
+def distribuirCartas():
+    mao1 = []
+    for _ in range(3):
+        mao1.append(baralho.baralho.pop(0))
+    jogadores[0].mao = mao1
+    
+    mao2 = []
+    for _ in range(3):
+        mao2.append(baralho.baralho.pop(0))
+    jogadores[1].mao = mao2
 
 def criarJogador(nome):
-    """
-    Cria um novo jogador e o adiciona à lista.
-    Retorna True se foi sucesso.
-    """
+    if len(jogadores) == 2:
+        print("Erro ao criar jogador: Servidor Lotado!")
+        return False
+     
     try:
         jogadores.append(Jogador(nome))
         print(f"Jogador '{nome}' criado com sucesso.")
-        return True # Retorna "sucesso" para o cliente
+        return True 
     except Exception as e:
         print(f"Erro ao criar jogador: {e}")
-        return False # Retorna "falha" para o cliente
+        return False 
 
 def listarJogadores():
-    """
-    Retorna uma LISTA DE STRINGS com os nomes dos jogadores.
-    """
-    # Nós não podemos retornar 'jogadores' (que é uma lista de OBJETOS)
-    # Então, criamos uma nova lista apenas com os NOMES.
     nomes_dos_jogadores = []
-    for j in jogadores:
-        nomes_dos_jogadores.append(j.nome)
+    for jogador in jogadores:
+        nomes_dos_jogadores.append(jogador.nome)
     
     print(f"Enviando lista de jogadores: {nomes_dos_jogadores}")
-    return nomes_dos_jogadores # Retorna a lista de NOMES para o cliente
+    return nomes_dos_jogadores 
 
-def gerarCartas(nome):
-    for j in jogadores:
-        for index in range(3):
-            j.mao.append(random.randint(1, 10))
-    return jogadores
+def verBaralho(nome):
+    for jogador in jogadores:
+        if jogador.nome == nome:
+            return jogador.mao
 
-# --- Configuração do Servidor ---
+jogo_iniciado = False
 
-# Cria o servidor
+def jogadoresProntos():
+    if len(jogadores) == 2:
+        distribuirCartas()
+        return True
+    return False
+
+def iniciarJogo():
+    teste = 1
+
 server = SimpleXMLRPCServer(('localhost', 8000))
 print("Servidor XML-RPC ouvindo na porta 8000...")
 
-# Registra as FUNÇÕES (e não instâncias)
 server.register_function(criarJogador)
 server.register_function(listarJogadores)
-server.register_function(gerarCartas)
+server.register_function(verBaralho)
+server.register_function(jogadoresProntos)
+server.register_function(iniciarJogo)
 
-# Roda o servidor
 try:
     server.serve_forever()
 except KeyboardInterrupt:
