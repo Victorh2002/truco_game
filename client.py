@@ -12,6 +12,7 @@ class Client:
 		self.nomeUsuario = None
 		self.sair = False
 		self.rodada = 1
+		self.cartas = []
 
 	def menu(self):
 		while self.sair != True:
@@ -43,7 +44,7 @@ class Client:
 		print("1 - Cadastrar jogador.")
 		print("2 - Listar jogadores")
 		print("3 - Listar pontuação")
-		print("4 - Inicar")
+		print("4 - Iniciar")
 		print("5 - Sair")
 		resposta = input("Opção: ")
 		match resposta:
@@ -71,6 +72,10 @@ class Client:
 			case _:
 				print("Opção desconhecida")
 	def menu_distribuicao(self):
+		if len(self.cartas) >  0 :
+			print("Aguarde outros usuários pegarem as cartas")
+			input("Aperte 'ENTER' para continuar")
+			return
 		print("1 - Solicitar cartas")
 		print("2 - Sair")
 		resposta = input("opção:")
@@ -81,6 +86,7 @@ class Client:
 				if len(strJson) > 1:
 					cartas= json.loads(strJson)
 					self.cartas= cartas
+					self.rodada = 1
 				else:
 					print(f"O usuário {self.nomeUsuario} já pegou cartas")
 				print(self.cartas)
