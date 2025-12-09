@@ -20,8 +20,9 @@ class Client:
 			os.system(config.CMD_CLS)
 			for e in Estados:
 				if e.value == estado:
-					print(f"Estado {e.name}")
+					print(f"Estado servidor:{e.name}")
 			print(f"Jogador:{self.nomeUsuario}")
+			print("----------------------------")
 			match estado:
 				case Estados.INICIOJOGO.value:
 					self.menu_estado_inicio_jogo()
@@ -41,36 +42,53 @@ class Client:
 	def menu_estado_inicio_jogo(self):
 		print("Inicio de jogo:")
 		print("Selecione uma opção:")
-		print("1 - Cadastrar jogador.")
-		print("2 - Listar jogadores")
-		print("3 - Listar pontuação")
-		print("4 - Iniciar")
-		print("5 - Sair")
-		resposta = input("Opção: ")
-		match resposta:
-			case '1':
-				nome = input("nome:")
-				self.nomeUsuario = nome
-				equipe = input("equipe (vazio sozinho):")
-				print(f"equipe{type(equipe)} nome {type(nome)}")
-				resposta = self.proxy.addJogador(nome, equipe)
-				if resposta:
-					print(f"Gerou usuário {nome}")
-				else:
-					print(f"Erro ao gerar o usuário {nome}")
-			case '2':
-				print(self.proxy.mostrarJogo())
-				input("\n\nAperte 'ENTER' para continuar")
-			case '3':
-				print(self.proxy.MostrarPontuacao())
-				input("\n\nAperte 'ENTER' para continuar")
-			case '4':
-				print("Solicitando inicio de jogo")
-				self.proxy.iniciar()
-			case '5':
-				self.sair=True
-			case _:
-				print("Opção desconhecida")
+		lstMenu = []
+		if self.nomeUsuario == "" or self.nomeUsuario == None:
+			lstMenu.append("Cadastrar jogador")
+		lstMenu.append("Listar jogadores")
+		lstMenu.append("Listar pontuação")
+		lstMenu.append("Solicitar inicio de jogo")
+		lstMenu.append("Sair")
+		x = 1
+		for opcao in lstMenu:
+			print(f"{x:2d} - {opcao}")  
+			x += 1
+
+		res = input("Opção: ")
+		if res in ['1', '2', '3', '4' , '5']:
+			resposta = int(res)
+		else:
+			resposta = -1
+		
+		if resposta == -1:
+			print("Opção desconhecida")
+			input("Tecle 'ENTER' para continuar")
+		elif  lstMenu[resposta-1]  ==  "Cadastrar jogador" :
+			os.system(config.CMD_CLS)
+			print("Adição de usuário")
+			nome = input("nome:")
+			self.nomeUsuario = nome
+			equipe = input("equipe (vazio sozinho):")
+			res = self.proxy.addJogador(nome, equipe)
+			resposta = json.loads(res)
+			print(resposta['mensagem'])
+			input("Tecle 'ENTER' para continuar")
+		elif  lstMenu[resposta-1]  ==  "Listar jogadores" :
+			print(self.proxy.mostrarJogo())
+			input("\n\nAperte 'ENTER' para continuar")
+		elif  lstMenu[resposta-1]  ==  "Listar pontuação" :
+			print(self.proxy.MostrarPontuacao())
+			input("\n\nAperte 'ENTER' para continuar")
+		elif  lstMenu[resposta-1]  ==  "Solicitar inicio de jogo" :
+			print("Solicitando inicio de jogo")
+			resposta = self.proxy.iniciar()
+			print(f"{resposta}")
+			input("\n\nAperte 'ENTER' para continuar")
+		elif  lstMenu[resposta-1]  ==  "Sair" :
+			self.sair=True
+		else:
+			print("Opção desconhecida")
+			input("Tecle 'ENTER' para continuar")
 	def menu_distribuicao(self):
 		if len(self.cartas) >  0 :
 			print("Aguarde outros usuários pegarem as cartas")
@@ -100,13 +118,14 @@ class Client:
 	def menu_lance(self):
 		if self.proxy.estadoservidor() != Estados.LANCE.value:
 			return
+		rodada_servidor = self.proxy.obterRododa()
+		print(f"Rodada no servidor {rodada_servidor}")
+		print(f"Rodada no cliente {self.rodada}")
+		print("----------------------------")
 		print("Estado de fazer lance")
 		print("1 - Desistir")
 		print("2 - Listar Mesa")
 		contar = 0
-		rodada_servidor = self.proxy.obterRododa()
-		print(f"rodada_servidor {rodada_servidor}")
-		print(f"self.rodada {self.rodada}")
 		if self.rodada == rodada_servidor:
 			for carta in self.cartas:
 				print(f"{contar + 3} - Jogar carta  {carta}") 
@@ -114,7 +133,7 @@ class Client:
 		resposta = input("Opção:")
 		match resposta:
 			case '1':
-				self.proxy.lanceCarta(self.nomeUsuario, '{"desistir":"SIM", "jogador":"' + 'self.nomeUsuario"}')
+				self.proxy.lanceCarta(self.nomeUsuario, '{"desistir":"SIM", "jogador":"' + self.nomeUsuario + '"}')
 			case '2':
 				os.system(config.CMD_CLS)
 				print(self.proxy.MostrasCartasNaMesa())
