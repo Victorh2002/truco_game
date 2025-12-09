@@ -6,5 +6,6 @@ class Estados(Enum):
 	DISTRIBUICAO=3
 	LANCE=4
 	TRUCO=5
+	VITORIAEQUIPE=6
 
 
