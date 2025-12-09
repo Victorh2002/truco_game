@@ -9,7 +9,7 @@ class Baralho:
 		baralho = []
 		for naipe in self.naipes:
 			for valor in self.valores:
-				baralho.append({'simbolo':valor, 'naipe':naipe, 'texto': valor + " de " + naipe})
+				baralho.append({'simbolo':valor, 'naipe':naipe, 'texto': valor + " de " + naipe, 'valor':self.valor(valor, naipe)})
 		return baralho
 
 	def embaralharBaralho(self):
