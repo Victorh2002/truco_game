@@ -35,8 +35,21 @@ class Client:
 					self.menu_lance()
 				case Estados.TRUCO.value:
 					print("Estado truco")
+				case Estados.VITORIAEQUIPE:
+					self.menuVitoria()
 				case _:
 					print("Estado desconhecido")
+
+	def menuVitoria(self):
+		strVE = self.proxy.vitoriaEquipe()
+		objVe = json.loads(strVE)
+		os.system(config.CMD_CLS)
+		print("Equipe vendora: ", objVE["equipe"])
+		print("Pontuação: ", objVE["pontos"])
+		resposta=input("Digite '1' para iniciar nova partida")
+		if resposta == '1':
+			self.proxy.restart()
+
 
 
 	def menu_estado_inicio_jogo(self):

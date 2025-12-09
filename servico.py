@@ -7,6 +7,10 @@ import random
 
 class Truco:
 	def __init__(self):
+		self.restart()
+		self.equipevitoriosa = None
+	
+	def restart(self):
 		self.estado = Estados.INICIOJOGO
 		self.listaEquipe = []
 		self.listaRodadas= {1:[], 2:[] , 3:[]}
@@ -38,16 +42,34 @@ class Truco:
 		self.estado = Estados.DISTRIBUICAO
 		self.listaJogadorDistribuicao = []
 		self.listaJogadorLances = []
+		self.equipevitoriosa = None
 		strRetorno = "Iniciar o estado Distribuição de cartas"
 		return strRetorno
+	def _verifica_vitoriaEquipe(self):
+		pontos = 2
+		sorted( self.listaEquipe, key=lambda e: e.pontos)
+		print("self.listaEquipe[0].pontos", self.listaEquipe[0].pontos) 
+		if self.listaEquipe[0].pontos >= pontos:
+			self.equipevitoriosa = self.listaEquipe[0]
+			return self.equipevitoriosa
+		return None
 	def proximaRodada(self):
-		self.estado = Estados.INICIOJOGO
+		if self._verifica_vitoriaEquipe() !=None:
+			self.restart()
+			self.estado = Estados.VITORIAEQUIPE
+		else:
+			self.estado = Estados.INICIOJOGO
 		self.rodada = 1
 		self.registraJogadorCarta = []
 		self.pontos_rodada = 1
 		self.pontos_truco = 0
 		self.equipe_truco =''
+		self.listaRodadas= {1:[], 2:[] , 3:[]}
 
+	def vitoriaEquipe():
+		if self.estado == Estados.VITORIAEQUIPE:
+			e = self.equipevitoriosa
+			return json.dumps({"equipe":e.nome, "pontos":e.pontos})
 	
 
 	def solicitarCartas(self, nomeUsuario):
@@ -245,12 +267,11 @@ class Truco:
 				self._addVitoriaEquipeJogador(vitorioso[0]['jogador'])
 				self.rodada += 1
 				if self.rodada > 3:
-					self.rodada = 1
-					self.estado = Estados.INICIOJOGO
 					sorted(self.listaEquipe, key=lambda e : e.vitoria_rodada, reverse=True)
 					self.listaEquipe[0].pontos += self.pontos_rodada
 					for e in self.listaEquipe:
 						e.vitoria_rodada = 0
+					self.proximaRodada()
 			return True
 		return False
 
